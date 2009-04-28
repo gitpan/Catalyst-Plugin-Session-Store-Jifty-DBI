@@ -8,7 +8,7 @@ __PACKAGE__->config({
   schema_base  => 'TestApp::Schema',
   connect_info => {
     driver   => 'SQLite',
-    database => 'testapp.db',
+    database => ':memory:',
   },
 });
 

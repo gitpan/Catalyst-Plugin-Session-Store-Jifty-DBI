@@ -8,7 +8,7 @@ sub setup : Local {
   my ($self, $c) = @_;
 
   my $database = $c->model('DB')->database;
-  if ( -f $database ) {
+  if ( $database && -f $database ) {
     $c->model('DB')->disconnect;
     unlink $database;
   }
@@ -20,7 +20,7 @@ sub teardown : Local {
   my ($self, $c) = @_;
 
   my $database = $c->model('DB')->database;
-  if ( -f $database ) {
+  if ( $database && -f $database ) {
     $c->model('DB')->disconnect;
     unlink $database;
   }

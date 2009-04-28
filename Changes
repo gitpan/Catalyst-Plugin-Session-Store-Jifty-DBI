@@ -1,4 +1,7 @@
 Revision history for Catalyst-Plugin-Session-Store-Jifty-DBI
 
+0.02 2009/04/28
+  - switched from NEXT to MRO::Compat
+
 0.01 2008/05/05
   - initial release

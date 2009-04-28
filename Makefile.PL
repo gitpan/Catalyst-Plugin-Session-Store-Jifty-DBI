@@ -8,11 +8,11 @@ WriteMakefile(
   VERSION_FROM  => 'lib/Catalyst/Plugin/Session/Store/Jifty/DBI.pm',
   ABSTRACT_FROM => 'lib/Catalyst/Plugin/Session/Store/Jifty/DBI.pm',
   PREREQ_PM => {
-    'Catalyst::Model::Jifty::DBI' => '0.05',
+    'Catalyst::Model::Jifty::DBI' => '0.06',
     'Catalyst::Plugin::Session'   => '0.15',
     'Catalyst::Runtime'           => '5.70',
     'MIME::Base64'                => 0,
-    'NEXT'                        => 0,
+    'DBD::SQLite'                 => '1.25',
     'Storable'                    => 0,
     'Test::More'                  => '0.47',
     'Test::UseAllModules'         => '0.09',

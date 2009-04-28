@@ -6,14 +6,15 @@ use base qw( Catalyst::Plugin::Session::Store );
 use Storable qw( nfreeze thaw );
 use MIME::Base64;
 use Catalyst::Exception;
-use NEXT;
+use MRO::Compat;
+use mro 'c3';
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 sub setup_session {
   my $c = shift;
 
-  $c->NEXT::setup_session(@_);
+  $c->maybe::next::method(@_);
 
   unless ( $c->config->{session}->{moniker} ) {
     Catalyst::Exception->throw(
