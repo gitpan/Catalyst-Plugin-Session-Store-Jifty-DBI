@@ -7,7 +7,7 @@ use Catalyst;
 
 __PACKAGE__->config({
   name => __PACKAGE__,
-  session => {
+  'Plugin::Session' => {
     expires => 3600,
     moniker => $ENV{TESTAPP_SESSION_STORE_JDBI_MONIKER},
     use_custom_serialization

@@ -9,35 +9,35 @@ use Catalyst::Exception;
 use MRO::Compat;
 use mro 'c3';
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 sub setup_session {
   my $c = shift;
 
   $c->maybe::next::method(@_);
 
-  unless ( $c->config->{session}->{moniker} ) {
+  unless ( $c->_session_plugin_config->{moniker} ) {
     Catalyst::Exception->throw(
       "Session::Store::Jifty::DBI: 'moniker' is missing"
     );
   }
-  $c->config->{session}->{moniker_collection}
-    ||= $c->config->{session}->{moniker} . 'Collection';
+  $c->_session_plugin_config->{moniker_collection}
+    ||= $c->_session_plugin_config->{moniker} . 'Collection';
 
-  my %column = %{ $c->config->{session}->{columns} || {} };
+  my %column = %{ $c->_session_plugin_config->{columns} || {} };
   unless ( $column{id} && $column{session_data} && $column{expires} ) {
     $column{id}           ||= 'session_id';
     $column{session_data} ||= 'session_data';
     $column{expires}      ||= 'expires';
-    $c->config->{session}->{columns} = \%column;
+    $c->_session_plugin_config->{columns} = \%column;
   }
 }
 
 sub get_session_data {
   my ($c, $key) = @_;
 
-  my $moniker = $c->config->{session}->{moniker};
-  my %column  = %{ $c->config->{session}->{columns} };
+  my $moniker = $c->_session_plugin_config->{moniker};
+  my %column  = %{ $c->_session_plugin_config->{columns} };
 
   my $record = $c->model($moniker);
   if ( my ($sid) = $key =~ /^expires:(.*)/ ) {
@@ -48,7 +48,7 @@ sub get_session_data {
   else {
     $record->load_by_cols( $column{id} => $key );
     my $data = $record->_value( $column{session_data} );
-    return ( $c->config->{session}->{use_custom_serialization} )
+    return ( $c->_session_plugin_config->{use_custom_serialization} )
       ? $data
       : thaw( decode_base64( $data ) );
   }
@@ -58,8 +58,8 @@ sub get_session_data {
 sub store_session_data {
   my ($c, $key, $data) = @_;
 
-  my $moniker = $c->config->{session}->{moniker};
-  my %column  = %{ $c->config->{session}->{columns} };
+  my $moniker = $c->_session_plugin_config->{moniker};
+  my %column  = %{ $c->_session_plugin_config->{columns} };
 
   my $record = $c->model($moniker);
   if ( my ($sid) = $key =~ /^expires:(.*)/ ) {
@@ -73,7 +73,7 @@ sub store_session_data {
     }
   }
   else {
-    unless ( $c->config->{session}->{use_custom_serialization} ) {
+    unless ( $c->_session_plugin_config->{use_custom_serialization} ) {
       $data = encode_base64( nfreeze( $data ) );
     }
 
@@ -113,8 +113,8 @@ sub delete_session_data {
 
   return if $key =~ /^expires:/;
 
-  my $moniker = $c->config->{session}->{moniker};
-  my %column  = %{ $c->config->{session}->{columns} };
+  my $moniker = $c->_session_plugin_config->{moniker};
+  my %column  = %{ $c->_session_plugin_config->{columns} };
 
   my $record = $c->model($moniker);
   $record->load_by_cols( $column{id} => $key );
@@ -126,8 +126,8 @@ sub delete_expired_sessions {
 
   # XXX: this must be much better to do with simple_query
 
-  my $moniker = $c->config->{session}->{moniker_collection};
-  my %column  = %{ $c->config->{session}->{columns} };
+  my $moniker = $c->_session_plugin_config->{moniker_collection};
+  my %column  = %{ $c->_session_plugin_config->{columns} };
 
   my $collection = $c->model($moniker);
   $collection->limit(
@@ -175,10 +175,10 @@ Catalyst::Plugin::Session::Store::Jifty::DBI - Store your session with Jifty::DB
   __PACKAGE__->config->{schema_base} = 'MyApp::Schema';
 
   # and your app.
-  MyApp->config->{session} = {
+  MyApp->config('Plugin::Session' => {
     expires => 3600,
     moniker => 'DB::Session',
-  };
+  });
 
   # then in an action
   $c->session->[foo} = 'bar'; # will be saved
@@ -203,11 +203,15 @@ specify the moniker to access your session table (to get a session record) via $
 
 by default, this module uses the column names shown above, but if you want to change some of these, you can give this a hash reference like this:
 
-  MyApp->config->{session}->{columns} = {
-    id           => 'sid',
-    session_data => 'body',
-    expires      => 'until',
-  };
+  MyApp->config('Plugin::Session' => {
+    expires => 3600,
+    moniker => 'DB::Session',
+    columns => {
+      id           => 'sid',
+      session_data => 'body',
+      expires      => 'until',
+    },
+  });
 
 =head2 use_custom_serialization
 
